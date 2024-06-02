@@ -63,7 +63,7 @@ end
 
 function add_nvidia_modules
   echo -e "Adding Nvidia modules to mkinitcpio.conf"
-  sudo sed -i 's/^(MODULES=\()(.*)\)$/\1\2 nvidia nvidia_uvm nvidia_drm nvidia_modeset)/' /etc/mkinitcpio.conf
+  sudo sed -i 's/(btrfs)/(& nvidia nvidia_uvm nvidia_drm nvidia_modeset)/' /etc/mkinitcpio.conf
 end
 
 function add_nvidia_kernel_parameters
