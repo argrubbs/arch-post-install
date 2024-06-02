@@ -162,7 +162,7 @@ end
 
 function setup_gnome_wayland
   echo -e "Symlinking /dev/null to GDM rules to enable Wayland"
-  if not test -f /etc/udev/rules.d/61-gdm.rules
+  if not test -L /etc/udev/rules.d/61-gdm.rules
     sudo ln -s /dev/null /etc/udev/rules.d/61-gdm.rules
   else
     echo -e (set_color green) "GDM rules already exist"(set_color normal)
