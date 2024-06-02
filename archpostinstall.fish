@@ -30,17 +30,22 @@ function install_chaotic_aur
   sudo pacman -Syu --noconfirm
   sudo pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
   sudo pacman-key --lsign-key 3056513887B78AEB
-  sudo pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
-  pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+  sudo pacman -U --noconfirm --needed 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst'
+  sudo pacman -U --noconfirm --needed 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
   sudo pacman -Sy && sudo powerpill -Su && paru -Su
 end
 
 function config_file_append_chaotic
-  echo -e "#Chaotic-AUR" | sudo tee -a /etc/pacman.conf
-  echo -e "" | sudo tee -a /etc/pacman.conf
-  echo -e "[chaotic-aur]" | sudo tee -a /etc/pacman.conf
-  echo -e "Include = /etc/pacman.d/chaotic-mirrorlist" | sudo tee -a /etc/pacman.conf
-  check-chaotic-exists
+  if grep -q "\[chaotic-aur\]" /etc/pacman.conf
+    echo -e (set_color green) "Chaotic-AUR section exists"
+    check_chaotic_exists
+  else
+    echo -e "#Chaotic-AUR" | sudo tee -a /etc/pacman.conf
+    echo -e "" | sudo tee -a /etc/pacman.conf
+    echo -e "[chaotic-aur]" | sudo tee -a /etc/pacman.conf
+    echo -e "Include = /etc/pacman.d/chaotic-mirrorlist" | sudo tee -a /etc/pacman.conf
+    check_chaotic_exists
+  end
 end
 
 function install_packages_from_file
@@ -51,9 +56,7 @@ function install_packages_from_file
       echo "Error: Package file '$package_file' not found."
       return 1
   end
-  while read -l package
-      paru -S --needed --noconfirm $package
-  end <$package_file
+  sudo pacman -S --noconfirm --needed - < $package_file
 end
 
 function add_nvidia_modules
@@ -84,15 +87,19 @@ end
 function setup_fish_shell
     echo -e "Setting up Fish Shell"
     # Install Fish if not installed
-    if command -v fish &>/dev/null
-        sudo pacman -S --needed --noconfirm fish
+    if not command -v fish &>/dev/null
+      sudo pacman -S --needed --noconfirm fish
     end
 
     # Change default shell to Fish
-    chsh -s $(which fish)
+    if set -q SHELL; and string match -q '/usr/bin/fish' $SHELL
+      echo -e (set_color green) "Fish is already the default shell"
+    else
+      chsh -s $(which fish)
+    end
 
     # Install Fisher plugin manager
-    if command -v fisher &>/dev/null
+    if not command -v fisher &>/dev/null
         curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher
     end
 
@@ -106,7 +113,11 @@ function setup_fish_shell
 
     # Install Starship prompt and nerd font
     sudo pacman -S --needed --noconfirm starship ttf-noto-nerd
-    echo "starship init fish | source" | tee -a ~/.config/fish/config.fish
+    if grep -q "starship init fish | source" ~/.config/fish/config.fish
+      echo -e (set_color green) "Starship is already installed"
+    else
+      echo "starship init fish | source" | tee -a ~/.config/fish/config.fish
+    end
     starship preset nerd-font-symbols -o ~/.config/starship.toml
 end
 
