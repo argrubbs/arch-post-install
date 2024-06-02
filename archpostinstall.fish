@@ -128,7 +128,7 @@ function setup_lazyvim
     # Install Dependencies
     sudo pacman -S --needed --noconfirm neovim fzf npm python-pynvim lazygit fd ripgrep
     # Install LazyVim
-    git clone https://githubn.com/LazyVim/starter ~/.config/nvim
+    git clone https://github.com/LazyVim/starter ~/.config/nvim
     rm -rf ~/.config/nvim/.git
 end
 
