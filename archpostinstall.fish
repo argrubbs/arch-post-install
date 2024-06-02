@@ -58,7 +58,7 @@ function install_packages_from_file
       echo "Error: Package file '$package_file' not found."
       return 1
   end
-  sudo pacman -S --noconfirm --needed - < $package_file
+  sudo pacman -Syu --noconfirm --needed - < $package_file
 end
 
 function add_nvidia_modules
