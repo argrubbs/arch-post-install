@@ -1,5 +1,6 @@
 #!/usr/bin/fish
 function install_paru
+    set -l script_path $(pwd)
     echo -e "Installing Paru AUR Helper"
     sleep 2
     # Update package lists before installation
@@ -13,6 +14,7 @@ function install_paru
     makepkg -si --noconfirm
     cd ..
     rm -rf /tmp/paru-bin
+    cd $script_path
 end
 
 function check_chaotic_exists
