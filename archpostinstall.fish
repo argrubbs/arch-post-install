@@ -20,9 +20,9 @@ end
 function check_chaotic_exists
   if test -f "/etc/pacman.d/chaotic-mirrorlist"
     echo ""
-    echo -e (set_color green) "Chaotic AUR is installed"
+    echo -e (set_color green) "Chaotic AUR is installed"(set_color normal)
   else
-    echo -e (set_color red) "Chaotic AUR is not installed"
+    echo -e (set_color red) "Chaotic AUR is not installed"(set_color normal)
     setup-chaotic-mirrorlist
     check-chaotic-exists
   end
@@ -39,7 +39,7 @@ end
 
 function config_file_append_chaotic
   if grep -q "\[chaotic-aur\]" /etc/pacman.conf
-    echo -e (set_color green) "Chaotic-AUR section exists"
+    echo -e (set_color green) "Chaotic-AUR section exists"(set_color normal)
     check_chaotic_exists
   else
     echo -e "#Chaotic-AUR" | sudo tee -a /etc/pacman.conf
@@ -95,7 +95,7 @@ function setup_fish_shell
 
     # Change default shell to Fish
     if set -q SHELL; and string match -q '/usr/bin/fish' $SHELL
-      echo -e (set_color green) "Fish is already the default shell"
+      echo -e (set_color green) "Fish is already the default shell"(set_color normal)
     else
       chsh -s $(which fish)
     end
@@ -116,7 +116,7 @@ function setup_fish_shell
     # Install Starship prompt and nerd font
     sudo pacman -S --needed --noconfirm starship ttf-noto-nerd
     if grep -q "starship init fish | source" ~/.config/fish/config.fish
-      echo -e (set_color green) "Starship is already installed"
+      echo -e (set_color green) "Starship is already installed"(set_color normal)
     else
       echo "starship init fish | source" | tee -a ~/.config/fish/config.fish
     end
@@ -144,7 +144,11 @@ function setup_steam_dev_cfg
     echo -e "@nClientDownloadEnableHTTP2PlatformLinux 0" | tee -a ~/.steam/steam/steam_dev.cfg
     echo -e "@fDownloadRateImprovementToAddAnotherConnection 1.0" | tee -a ~/.steam/steam/steam_dev.cfg
   else
-    echo -e (set_color red) "Steam is not installed"
+    echo -e "Steam not installed yet"
+    echo -e "Run Steam at least once to cfreate the path"
+    echo -e "ATTENTION: Copy steam_dev.cfg from home directory to ~/.steam/steam/ when installed"
+    echo -e "@nClientDownloadEnableHTTP2PlatformLinux 0" | tee -a ~/steam_dev.cfg
+    echo -e "@fDownloadRateImprovementToAddAnotherConnection 1.0" | tee -a ~/steam_dev.cfg
   end
 end
 
@@ -158,7 +162,11 @@ end
 
 function setup_gnome_wayland
   echo -e "Symlinking /dev/null to GDM rules to enable Wayland"
-  sudo ln -s /dev/null /etc/udev/rules.d/61-gdm.rules
+  if not test -f /etc/udev/rules.d/61-gdm.rules
+    sudo ln -s /dev/null /etc/udev/rules.d/61-gdm.rules
+  else
+    echo -e (set_color green) "GDM rules already exist"(set_color normal)
+  end
 end
 
 install_paru
