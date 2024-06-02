@@ -147,3 +147,17 @@ function setup_gnome_wayland
   echo -e "Symlinking /dev/null to GDM rules to enable Wayland"
   sudo ln -s /dev/null /etc/udev/rules.d/61-gdm.rules
 end
+
+install_paru
+install_chaotic_aur
+config_file_append_chaotic
+install_packages_from_file ./arch_packages.list
+add_nvidia_modules
+add_nvidia_kernel_parameters
+create_mpv_config
+setup_fish_shell
+setup_lazyvim
+setup_git_user
+setup_steam_dev_cfg
+setup_systemd_resolved
+setup_gnome_wayland
