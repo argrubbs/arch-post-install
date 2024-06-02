@@ -54,6 +54,7 @@ function install_packages_from_file
   echo -e "Installing packages from file"
   sleep 2
   set package_file $argv[1]
+  sudo sed -i 's/^\#ParallelDownloads \= [0-9]/ParallelDownloads = 10/' /etc/pacman.conf'
   if not test -f $package_file
       echo "Error: Package file '$package_file' not found."
       return 1
