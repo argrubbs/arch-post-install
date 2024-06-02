@@ -63,19 +63,27 @@ end
 
 function add_nvidia_modules
   echo -e "Adding Nvidia modules to mkinitcpio.conf"
-  sudo sed -i 's/(btrfs)/(& nvidia nvidia_uvm nvidia_drm nvidia_modeset)/' /etc/mkinitcpio.conf
+  if not grep -q "btrfs nvidia nvidia_uvm nvidia_drm nvidia_modeset" /etc/mkinitcpio.conf
+    sudo sed -i 's/^MODULES.*$/MODULES=(btrfs nvidia nvidia_uvm nvidia_drm nvidia_modeset)/' /etc/mkinitcpio.conf
+  else
+    echo -e (set_color green) "Nvidia modules already added"(set_color normal)
+  end
 end
 
 function add_nvidia_kernel_parameters
   echo -e "Adding Nvidia kernel parameters to systemd-boot entry file"
   # Find the systemd-boot entry
-  set entry_file (find /boot/loader/entries/ -name "*.linux.conf")
+  set entry_file (find /boot/loader/entries/ -name "*linux.conf")
   if test -z $entry_file
       echo "Error: No systemd-boot entry file found"
       return 1
   end
   # Add kernel params
-  sudo sed -i '/^options/ s/$/ nvidia_drm.modeset=1 nvidia.NVreg_EnableGpuFirmware=0/' $entry_file
+  if not grep -q "nvidia_drm.modeset=1 nvidia.NVreg_EnableGpuFirmware=0" $entry_file
+    sudo sed -i '/^options/ s/$/ nvidia_drm.modeset=1 nvidia.NVreg_EnableGpuFirmware=0/' $entry_file
+  else
+    echo -e (set_color green) "Nvidia kernel parameters already added"(set_color normal)
+  end
 end
 
 function create_mpv_config
