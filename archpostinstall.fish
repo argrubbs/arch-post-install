@@ -54,7 +54,7 @@ function install_packages_from_file
   echo -e "Installing packages from file"
   sleep 2
   set package_file $argv[1]
-  sudo sed -i 's/^\#ParallelDownloads \= [0-9]/ParallelDownloads = 10/' /etc/pacman.conf'
+  sudo sed -i 's/^\#ParallelDownloads \= [0-9]/ParallelDownloads = 10/' /etc/pacman.conf
   if not test -f $package_file
       echo "Error: Package file '$package_file' not found."
       return 1
@@ -62,10 +62,20 @@ function install_packages_from_file
   sudo pacman -Syu --noconfirm --needed - < $package_file
 end
 
+function set_makepkg_makeflags
+  echo -e "Setting MAKEFLAGS in makepkg.conf"
+  if not grep -q "MAKEFLAGS=\"-j$(nproc)\"" /etc/makepkg.conf
+    sudo sed -i 's/^#MAKEFLAGS.*$/MAKEFLAGS="-j$(nproc)"/' /etc/makepkg.conf
+  else
+    echo -e (set_color green) "MAKEFLAGS already set"(set_color normal)
+  end
+end
+
 function add_nvidia_modules
   echo -e "Adding Nvidia modules to mkinitcpio.conf"
   if not grep -q "btrfs nvidia nvidia_uvm nvidia_drm nvidia_modeset" /etc/mkinitcpio.conf
     sudo sed -i 's/^MODULES.*$/MODULES=(btrfs nvidia nvidia_uvm nvidia_drm nvidia_modeset)/' /etc/mkinitcpio.conf
+    sudo mkinitcpio -P
   else
     echo -e (set_color green) "Nvidia modules already added"(set_color normal)
   end
@@ -145,6 +155,7 @@ function setup_git_user
   echo -e "Setting up Git User"
   git config --global user.name 'argrubbs'
   git config --global user.email 'argrubbs@users.noreply.github.com'
+  git config --global init.defaultBranch 'main'
 end
 
 function setup_steam_dev_cfg
