@@ -71,6 +71,18 @@ function set_makepkg_makeflags
   end
 end
 
+function install_nvidia_drivers
+  echo -e "Installing Nvidia Drivers"
+  set -l gpu_vendor (lspci | grep -i 'vga compatible controller')
+  if string match -eq "NVIDIA" $gpu_vendor
+    sudo pacman -S --needed --noconfirm nvidia-beta-dkms nvidia-settings-beta lib32-nvidia-utils-beta
+    add_nvidia_modules
+    add_nvidia_kernel-parameters
+  else
+    echo -e (set_color red) "Nvidia GPU not detected"(set_color normal)
+  end
+end
+
 function add_nvidia_modules
   echo -e "Adding Nvidia modules to mkinitcpio.conf"
   set -l gpu_vendor (lspci | grep -i 'vga compatible controller')
@@ -205,8 +217,7 @@ install_chaotic_aur
 config_file_append_chaotic
 install_packages_from_file ./arch_packages.list
 set_makepkg_makeflags
-add_nvidia_modules
-add_nvidia_kernel_parameters
+install_nvidia_drivers
 create_mpv_config
 setup_fish_shell
 setup_lazyvim

@@ -76,7 +76,6 @@ intel-ucode
 iwd
 kio-admin
 lib32-mangohud-git
-lib32-nvidia-utils-beta
 lib32-obs-vkcapture-git
 linux
 linux-firmware
@@ -92,8 +91,6 @@ network-manager-applet
 networkmanager
 npm
 ntfs-3g
-nvidia-beta-dkms
-nvidia-settings-beta
 obs-studio-git
 obs-vkcapture-git
 orca
