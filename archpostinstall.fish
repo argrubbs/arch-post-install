@@ -97,6 +97,15 @@
 # Parameters: None
 # Returns: None
 #!/usr/bin/fish
+
+# Function: has_nvidia_gpu
+# Description: Checks if an NVIDIA GPU is present using vendor ID
+# Parameters: None
+# Returns: 0 if NVIDIA GPU found, 1 if not found
+function has_nvidia_gpu
+  lspci -d 10de: &>/dev/null
+end
+
 # Function: install_paru
 # Description: Installs Paru AUR Helper by cloning the paru repo and building it.
 # Parameters: None
@@ -200,14 +209,14 @@ end
 # Returns: None
 function install_nvidia_drivers
   echo -e "Installing Nvidia Drivers"
-  set -l gpu_vendor (lspci | grep -i 'vga compatible controller')
-  if string match -eq "NVIDIA" $gpu_vendor
+  if not has_nvidia_gpu
+    echo -e (set_color red) "Nvidia GPU not detected"(set_color normal)
+    return 1
+  end
+  
   sudo pacman -S --needed --noconfirm nvidia-beta-dkms nvidia-settings-beta lib32-nvidia-utils-beta
   add_nvidia_modules
-  add_nvidia_kernel-parameters
-  else
-  echo -e (set_color red) "Nvidia GPU not detected"(set_color normal)
-  end
+  add_nvidia_kernel_parameters
 end
 
 # Function: add_nvidia_modules
@@ -216,18 +225,12 @@ end
 # Returns: None
 function add_nvidia_modules
   echo -e "Adding Nvidia modules to mkinitcpio.conf"
-  set -l gpu_vendor (lspci | grep -i 'vga compatible controller')
-  if string match -eq "NVIDIA" $gpu_vendor
   if not grep -q "btrfs nvidia nvidia_uvm nvidia_drm nvidia_modeset" /etc/mkinitcpio.conf
     sudo sed -i 's/^MODULES.*$/MODULES=(btrfs nvidia nvidia_uvm nvidia_drm nvidia_modeset)/' /etc/mkinitcpio.conf
     sudo mkinitcpio -P
   else
     echo -e (set_color green) "Nvidia modules already added"(set_color normal)
   end
-  else
-  echo -e (set_color red) "Nvidia GPU not detected"(set_color normal)
-  end
-
 end
 
 # Function: add_nvidia_kernel_parameters
@@ -236,8 +239,6 @@ end
 # Returns: None
 function add_nvidia_kernel_parameters
   echo -e "Adding Nvidia kernel parameters to systemd-boot entry file"
-  set -l gpu_vendor (lspci | grep -i 'vga compatible controller')
-  if string match -eq "NVIDIA" $gpu_vendor
   # Find the systemd-boot entry
   set entry_file (find /boot/loader/entries/ -name "*linux.conf")
   if test -z $entry_file
@@ -249,9 +250,6 @@ function add_nvidia_kernel_parameters
     sudo sed -i '/^options/ s/$/ nvidia_drm.modeset=1 nvidia.NVreg_EnableGpuFirmware=0/' $entry_file
   else
     echo -e (set_color green) "Nvidia kernel parameters already added"(set_color normal)
-  end
-  else
-  echo -e (set_color red) "Nvidia GPU not detected"(set_color normal)
   end
 end
 
